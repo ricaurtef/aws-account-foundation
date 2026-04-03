@@ -23,7 +23,45 @@ variable "environment" {
 }
 
 ############################
-# Identity
+# Accounts
+############################
+
+variable "production_account_id" {
+  description = "AWS account ID of the production workload account."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.production_account_id))
+    error_message = "Must be a 12-digit AWS account ID."
+  }
+}
+
+variable "production_account_email" {
+  description = "Email address for the production member account."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[^@]+@[^@]+\\.[^@]+$", var.production_account_email))
+    error_message = "Must be a valid email address."
+  }
+}
+
+############################
+# Identity Center
+############################
+
+variable "admin_email" {
+  description = "Email address for the admin Identity Center user."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[^@]+@[^@]+\\.[^@]+$", var.admin_email))
+    error_message = "Must be a valid email address."
+  }
+}
+
+############################
+# Identity (OIDC)
 ############################
 
 variable "github_owner" {

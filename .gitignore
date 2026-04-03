@@ -5,8 +5,9 @@ terraform.tfstate*
 # Local .terraform directories
 **/.terraform/*
 
-# Terraform lock file (not committed for reusable modules — but this is a root config, so include it)
-# .terraform.lock.hcl
+# Lock files (generated on the runner)
+.terraform.lock.hcl
+**/.terraform.lock.hcl
 
 # Claude Code
 CLAUDE.md
