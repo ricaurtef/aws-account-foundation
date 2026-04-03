@@ -61,11 +61,9 @@ aws-account-foundation/
 
 Deploys OIDC federation for GitHub Actions using
 [`terraform-aws-oidc-federation`](https://github.com/ricaurtef/terraform-aws-oidc-federation).
-Creates a single IAM role that any repo under `ricaurtef/*` can assume from `main`, scoped to:
-
-- **S3:** put/delete/get on the site content bucket
-- **CloudFront:** cache invalidation
-- **S3:** read/write on the Terraform state bucket
+Creates a single IAM role that any repo under `ricaurtef/*` can assume from `main`. The role
+is created without policies — each workload project attaches its own permissions via the
+`role_name` output.
 
 ### organization
 
@@ -188,10 +186,9 @@ No providers.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment (e.g., production, staging). | `string` | n/a | yes |
 | <a name="input_github_owner"></a> [github\_owner](#input\_github\_owner) | GitHub account owner for OIDC federation. | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS region. | `string` | n/a | yes |
-| <a name="input_site_bucket_name"></a> [site\_bucket\_name](#input\_site\_bucket\_name) | Name of the S3 bucket for site content. | `string` | n/a | yes |
-| <a name="input_state_bucket_name"></a> [state\_bucket\_name](#input\_state\_bucket\_name) | Name of the S3 bucket for Terraform state. | `string` | n/a | yes |
 ## Outputs
 
 | Name | Description |

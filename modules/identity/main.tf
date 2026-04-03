@@ -4,9 +4,3 @@ module "oidc" {
   platform     = "github"
   match_values = ["repo:${var.github_owner}/*:ref:refs/heads/main"]
 }
-
-resource "aws_iam_role_policy" "this" {
-  name   = "github-actions-deploy"
-  role   = module.oidc.role_name
-  policy = data.aws_iam_policy_document.this.json
-}
