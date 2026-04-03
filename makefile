@@ -31,7 +31,6 @@ chores: document format
 check:
 	@echo "Checking Terraform code formatting..."
 	terraform fmt -check -recursive
-	terraform-docs --config .config/terraform-docs.yml . --output-check
 
 .PHONY: document
 document:

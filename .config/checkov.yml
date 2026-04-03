@@ -21,3 +21,11 @@ skip-check:
   ############################
 
   - CKV_AWS_274 # AdministratorAccess is intentional — sole admin of a personal account.
+
+  ############################
+  # S3 (state bucket)
+  ############################
+
+  - CKV_AWS_144 # Cross-region replication not needed for a personal state bucket.
+  - CKV2_AWS_62 # Event notifications not needed for state storage.
+  - CKV_AWS_18  # Access logging on a state bucket is circular.
