@@ -147,7 +147,7 @@ data "aws_iam_policy_document" "foundation_pipeline" {
 # Trust policy: only the management OIDC role can assume this role.
 data "aws_iam_policy_document" "production_deploy_trust" {
   statement {
-    actions = ["sts:AssumeRole"]
+    actions = ["sts:AssumeRole", "sts:TagSession"]
 
     principals {
       type        = "AWS"
