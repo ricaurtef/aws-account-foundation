@@ -82,11 +82,9 @@ content: |-
 
   Deploys OIDC federation for GitHub Actions using
   [`terraform-aws-oidc-federation`](https://github.com/ricaurtef/terraform-aws-oidc-federation).
-  Creates a single IAM role that any repo under `ricaurtef/*` can assume from `main`, scoped to:
-
-  - **S3:** put/delete/get on the site content bucket
-  - **CloudFront:** cache invalidation
-  - **S3:** read/write on the Terraform state bucket
+  Creates a single IAM role that any repo under `ricaurtef/*` can assume from `main`. The role
+  is created without policies — each workload project attaches its own permissions via the
+  `role_name` output.
 
   ### organization
 
