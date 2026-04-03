@@ -29,6 +29,12 @@ skip-check:
   - CKV_AWS_274 # AdministratorAccess on SSO — sole admin of a personal account.
 
   ############################
+  # GitHub Actions
+  ############################
+
+  - CKV2_GHA_1 # Claude Code Review requires id-token: write for GitHub App auth.
+
+  ############################
   # S3 (state bucket)
   ############################
 
