@@ -184,6 +184,8 @@ data "aws_iam_policy_document" "production_deploy" {
       "s3:GetBucketObjectLockConfiguration",
       "s3:GetAccelerateConfiguration",
       "s3:GetBucketLocation",
+      "s3:GetBucketRequestPayment",
+      "s3:GetReplicationConfiguration",
       "s3:DeleteBucketPolicy",
       "s3:PutBucketVersioning",
       "s3:CreateBucket",
