@@ -5,5 +5,6 @@ module "oidc" {
   match_values = [
     "repo:${var.github_owner}/*:ref:refs/heads/main",
     "repo:${var.github_owner}/*:pull_request",
+    "repo:${var.github_owner}/*:environment:production",
   ]
 }
