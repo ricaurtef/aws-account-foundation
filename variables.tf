@@ -12,6 +12,16 @@ variable "region" {
   }
 }
 
+variable "environment" {
+  description = "Deployment environment (e.g., production, staging)."
+  type        = string
+
+  validation {
+    condition     = contains(["production", "staging", "development"], var.environment)
+    error_message = "Must be one of: production, staging, development."
+  }
+}
+
 ############################
 # Identity
 ############################
