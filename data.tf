@@ -104,6 +104,18 @@ data "aws_iam_policy_document" "foundation_pipeline" {
     resources = ["*"]
   }
 
+  # Route 53 Domains: nameserver delegation from management registrar
+  statement {
+    sid = "Route53Domains"
+    actions = [
+      "route53domains:GetDomainDetail",
+      "route53domains:GetOperationDetail",
+      "route53domains:UpdateDomainNameservers",
+    ]
+
+    resources = ["*"]
+  }
+
   # STS: identity verification + cross-account assume
   statement {
     sid = "STS"
