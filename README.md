@@ -16,24 +16,21 @@ before workload-specific infrastructure can be deployed.
 ## Architecture
 
 ```mermaid
-block-beta
-  columns 2
+flowchart TB
+  gh["GitHub Actions\n(any ricaurtef/* repo)"]
+  gh -->|"OIDC"| oidc
 
-  block:org:2["AWS Organization (management account)"]
-    columns 2
-
-    block:sso["IAM Identity Center (SSO)"]
-    end
-
-    block:oidc["OIDC Federation"]
-      p["Provider: GitHub Actions"]
-      t["Trust: ricaurtef/*:main"]
-      r["Role: no policies (generic)"]
-    end
-
-    block:s3:2["S3: ricaurtef-terraform-state\n(versioned, KMS encrypted, public access blocked)"]
-    end
+  subgraph mgmt["Management Account (hub)"]
+    oidc["OIDC Role\nfoundation policy\n+ sts:AssumeRole"]
+    sso["IAM Identity Center"]
+    state["S3: terraform-state"]
   end
+
+  subgraph prod["Production Account (spoke)"]
+    deploy["github-actions-deploy\nS3, CloudFront, ACM, Route 53"]
+  end
+
+  oidc -->|"role chaining"| deploy
 ```
 
 ## Repository structure
@@ -63,13 +60,28 @@ aws-account-foundation/
 
 Deploys OIDC federation for GitHub Actions using
 [`terraform-aws-oidc-federation`](https://github.com/ricaurtef/terraform-aws-oidc-federation).
-Creates a single IAM role that any repo under `ricaurtef/*` can assume from `main`. The role
-is created without policies — each workload project attaches its own permissions via the
-`role_name` output.
+Creates a single OIDC role in the management account (hub) that any repo under `ricaurtef/*`
+can assume from `main` or pull requests.
 
 ### organization
 
-Manages the AWS Organization resource with SCP and tag policy types enabled.
+Manages the AWS Organization resource with SCP policy types enabled, member accounts,
+Identity Center users, permission sets, and account assignments.
+
+## Hub-and-spoke IAM
+
+All pipelines authenticate through a single OIDC role in the management account (hub).
+When a workload needs to deploy to the production account (spoke), it chains into the
+`github-actions-deploy` role via `sts:AssumeRole`.
+
+| Role | Account | Purpose |
+|------|---------|---------|
+| `OIDC-Assumable-Role-*` | Management | Hub — OIDC entry point, foundation policy |
+| `github-actions-deploy` | Production | Spoke — S3, CloudFront, ACM, Route 53 |
+
+The production role's policy is managed here. When a new project needs a new AWS service,
+expand the policy in this foundation — not in the workload project. One PR, all projects
+benefit.
 
 ## Prerequisites
 
@@ -170,7 +182,10 @@ The version is derived from the latest `v*.*.*` tag. The first release starts at
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.27 |
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.39.0 |
+| <a name="provider_aws.production"></a> [aws.production](#provider\_aws.production) | 6.39.0 |
 ## Modules
 
 | Name | Source | Version |
@@ -181,13 +196,18 @@ No providers.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_admin_email"></a> [admin\_email](#input\_admin\_email) | Email address for the admin Identity Center user. | `string` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment (e.g., production, staging). | `string` | n/a | yes |
 | <a name="input_github_owner"></a> [github\_owner](#input\_github\_owner) | GitHub account owner for OIDC federation. | `string` | n/a | yes |
+| <a name="input_production_account_email"></a> [production\_account\_email](#input\_production\_account\_email) | Email address for the production member account. | `string` | n/a | yes |
+| <a name="input_production_account_id"></a> [production\_account\_id](#input\_production\_account\_id) | AWS account ID of the production workload account. | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS region. | `string` | n/a | yes |
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_organization_id"></a> [organization\_id](#output\_organization\_id) | ID of the AWS Organization. |
-| <a name="output_role_arn"></a> [role\_arn](#output\_role\_arn) | ARN of the IAM role for GitHub Actions. |
+| <a name="output_production_account_id"></a> [production\_account\_id](#output\_production\_account\_id) | Account ID of the production workload account. |
+| <a name="output_production_deploy_role_arn"></a> [production\_deploy\_role\_arn](#output\_production\_deploy\_role\_arn) | ARN of the shared deployment role in the production account. |
+| <a name="output_role_arn"></a> [role\_arn](#output\_role\_arn) | ARN of the OIDC role (management account). |
 <!-- END_TF_DOCS -->
