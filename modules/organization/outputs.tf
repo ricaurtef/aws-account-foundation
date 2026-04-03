@@ -16,3 +16,12 @@ output "master_account_id" {
   description = "Account ID of the management account."
   value       = aws_organizations_organization.this.master_account_id
 }
+
+############################
+# Member Accounts
+############################
+
+output "production_account_id" {
+  description = "Account ID of the production workload account."
+  value       = aws_organizations_account.this_production.id
+}

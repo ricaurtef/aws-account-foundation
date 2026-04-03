@@ -6,6 +6,7 @@ on:
       - "*.tf"
       - "modules/**"
       - "env/**"
+      - ".config/terraform-docs.yml"
   push:
     branches:
       - main
@@ -13,9 +14,10 @@ on:
       - "*.tf"
       - "modules/**"
       - "env/**"
+      - ".config/terraform-docs.yml"
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   pull-requests: write
 
@@ -23,7 +25,7 @@ env:
   TF_BACKEND_BUCKET: ricaurtef-terraform-state
   TF_BACKEND_KEY: personal/us-east-1/account-foundation/terraform.tfstate
   TF_BACKEND_REGION: us-east-1
-  TF_VAR_FILE: env/web-prod.tfvars
+  TF_VAR_FILE: env/production.tfvars
 
 jobs:
   check:
@@ -74,6 +76,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Install Checkov
+        run: pip install checkov
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+
       - name: Security
         run: make security
 
@@ -106,10 +115,34 @@ jobs:
       - name: Plan
         run: terraform plan -no-color -var-file="$TF_VAR_FILE"
 
+  docs:
+    name: Update docs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, validate, tflint, security]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install terraform-docs
+        run: |
+          curl -sSL -o /tmp/tf-docs.tar.gz \
+            "https://github.com/terraform-docs/terraform-docs/releases/download/v0.20.0/terraform-docs-v0.20.0-linux-amd64.tar.gz"
+          tar -xzf /tmp/tf-docs.tar.gz -C /usr/local/bin terraform-docs
+
+      - name: Regenerate README
+        run: make document
+
+      - name: Commit if changed
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add README.md
+          git diff --staged --quiet || git commit -m "docs: regenerate README" && git push
+
   deploy:
     name: Deploy
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [check, validate, tflint, security]
+    needs: [docs]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -138,3 +171,38 @@ jobs:
 
       - name: Apply
         run: terraform apply tfplan
+
+  release:
+    name: Release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Compute next version
+        id: version
+        run: |
+          git fetch --tags
+          LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 || true)
+
+          if [[ -z "$LATEST" ]]; then
+            NEXT="v1.0.0"
+          else
+            MAJOR=$(echo "$LATEST" | cut -d. -f1 | tr -d v)
+            MINOR=$(echo "$LATEST" | cut -d. -f2)
+            PATCH=$(echo "$LATEST" | cut -d. -f3)
+            NEXT="v${MAJOR}.${MINOR}.$((PATCH+1))"
+          fi
+
+          echo "tag=$NEXT" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

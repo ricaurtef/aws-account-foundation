@@ -10,8 +10,34 @@ soft-fail-on:
 
 skip-check:
   ############################
-  # IAM
+  # IAM — Foundation Pipeline
   ############################
 
-  - CKV_AWS_111 # CloudFront invalidation does not support resource-level ARNs.
-  - CKV_AWS_356 # CloudFront invalidation does not support resource-level ARNs.
+  # The foundation manages IAM roles, cross-account access, and SSO.
+  # These policies are inherently privileged by design.
+  - CKV_AWS_107 # Credentials exposure: sts:AssumeRole needed for hub-and-spoke.
+  - CKV_AWS_108 # Data exfiltration: S3 access needed for state and deployments.
+  - CKV_AWS_109 # Permissions management: IAM write needed for OIDC self-management.
+  - CKV_AWS_110 # Privilege escalation: IAM role/policy management is the purpose.
+  - CKV_AWS_111 # Write without constraints: CloudFront and org APIs don't support resource ARNs.
+  - CKV_AWS_356 # Wildcard resource: same as above.
+
+  ############################
+  # Identity Center
+  ############################
+
+  - CKV_AWS_274 # AdministratorAccess on SSO — sole admin of a personal account.
+
+  ############################
+  # GitHub Actions
+  ############################
+
+  - CKV2_GHA_1 # Claude Code Review requires id-token: write for GitHub App auth.
+
+  ############################
+  # S3 (state bucket)
+  ############################
+
+  - CKV_AWS_144 # Cross-region replication not needed for a personal state bucket.
+  - CKV2_AWS_62 # Event notifications not needed for state storage.
+  - CKV_AWS_18  # Access logging on a state bucket is circular.
