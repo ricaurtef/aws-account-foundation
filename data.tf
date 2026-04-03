@@ -111,6 +111,15 @@ data "aws_iam_policy_document" "foundation_pipeline" {
       "route53domains:GetDomainDetail",
       "route53domains:GetOperationDetail",
       "route53domains:UpdateDomainNameservers",
+      "route53domains:EnableDomainTransferLock",
+      "route53domains:DisableDomainTransferLock",
+      "route53domains:UpdateDomainContact",
+      "route53domains:UpdateDomainContactPrivacy",
+      "route53domains:EnableDomainAutoRenew",
+      "route53domains:DisableDomainAutoRenew",
+      "route53domains:ListTagsForDomain",
+      "route53domains:UpdateTagsForDomain",
+      "route53domains:DeleteTagsForDomain",
     ]
 
     resources = ["*"]
@@ -173,6 +182,10 @@ data "aws_iam_policy_document" "production_deploy" {
       "s3:GetLifecycleConfiguration",
       "s3:PutLifecycleConfiguration",
       "s3:GetBucketObjectLockConfiguration",
+      "s3:GetAccelerateConfiguration",
+      "s3:GetBucketLocation",
+      "s3:DeleteBucketPolicy",
+      "s3:PutBucketVersioning",
       "s3:CreateBucket",
       "s3:DeleteBucket",
       "s3:PutBucketOwnershipControls",
@@ -221,6 +234,9 @@ data "aws_iam_policy_document" "production_deploy" {
       "acm:ListTagsForCertificate",
       "acm:GetCertificate",
       "acm:ListCertificates",
+      "acm:RemoveTagsFromCertificate",
+      "acm:RenewCertificate",
+      "acm:UpdateCertificateOptions",
     ]
 
     resources = ["*"]
@@ -239,6 +255,7 @@ data "aws_iam_policy_document" "production_deploy" {
       "route53:ListHostedZones",
       "route53:ChangeTagsForResource",
       "route53:ListTagsForResource",
+      "route53:UpdateHostedZoneComment",
     ]
 
     resources = ["*"]
