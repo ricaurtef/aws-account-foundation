@@ -131,6 +131,7 @@ data "aws_iam_policy_document" "foundation_pipeline" {
     actions = [
       "sts:GetCallerIdentity",
       "sts:AssumeRole",
+      "sts:TagSession",
     ]
 
     resources = [
