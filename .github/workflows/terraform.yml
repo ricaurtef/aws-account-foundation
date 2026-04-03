@@ -79,6 +79,10 @@ jobs:
       - name: Install Checkov
         run: pip install checkov
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+
       - name: Security
         run: make security
 
