@@ -37,24 +37,21 @@ content: |-
   ## Architecture
 
   ```mermaid
-  block-beta
-    columns 2
+  flowchart TB
+    gh["GitHub Actions\n(any ricaurtef/* repo)"]
+    gh -->|"OIDC"| oidc
 
-    block:org:2["AWS Organization (management account)"]
-      columns 2
-
-      block:sso["IAM Identity Center (SSO)"]
-      end
-
-      block:oidc["OIDC Federation"]
-        p["Provider: GitHub Actions"]
-        t["Trust: ricaurtef/*:main"]
-        r["Role: no policies (generic)"]
-      end
-
-      block:s3:2["S3: ricaurtef-terraform-state\n(versioned, KMS encrypted, public access blocked)"]
-      end
+    subgraph mgmt["Management Account (hub)"]
+      oidc["OIDC Role\nfoundation policy\n+ sts:AssumeRole"]
+      sso["IAM Identity Center"]
+      state["S3: terraform-state"]
     end
+
+    subgraph prod["Production Account (spoke)"]
+      deploy["github-actions-deploy\nS3, CloudFront, ACM, Route 53"]
+    end
+
+    oidc -->|"role chaining"| deploy
   ```
 
   ## Repository structure
@@ -84,13 +81,28 @@ content: |-
 
   Deploys OIDC federation for GitHub Actions using
   [`terraform-aws-oidc-federation`](https://github.com/ricaurtef/terraform-aws-oidc-federation).
-  Creates a single IAM role that any repo under `ricaurtef/*` can assume from `main`. The role
-  is created without policies — each workload project attaches its own permissions via the
-  `role_name` output.
+  Creates a single OIDC role in the management account (hub) that any repo under `ricaurtef/*`
+  can assume from `main` or pull requests.
 
   ### organization
 
-  Manages the AWS Organization resource with SCP and tag policy types enabled.
+  Manages the AWS Organization resource with SCP policy types enabled, member accounts,
+  Identity Center users, permission sets, and account assignments.
+
+  ## Hub-and-spoke IAM
+
+  All pipelines authenticate through a single OIDC role in the management account (hub).
+  When a workload needs to deploy to the production account (spoke), it chains into the
+  `github-actions-deploy` role via `sts:AssumeRole`.
+
+  | Role | Account | Purpose |
+  |------|---------|---------|
+  | `OIDC-Assumable-Role-*` | Management | Hub — OIDC entry point, foundation policy |
+  | `github-actions-deploy` | Production | Spoke — S3, CloudFront, ACM, Route 53 |
+
+  The production role's policy is managed here. When a new project needs a new AWS service,
+  expand the policy in this foundation — not in the workload project. One PR, all projects
+  benefit.
 
   ## Prerequisites
 
