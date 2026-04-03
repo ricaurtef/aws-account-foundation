@@ -6,7 +6,6 @@ on:
       - "*.tf"
       - "modules/**"
       - "env/**"
-      - ".config/terraform-docs.yml"
   push:
     branches:
       - main
@@ -14,7 +13,6 @@ on:
       - "*.tf"
       - "modules/**"
       - "env/**"
-      - ".config/terraform-docs.yml"
 
 permissions:
   contents: write
@@ -115,34 +113,10 @@ jobs:
       - name: Plan
         run: terraform plan -no-color -var-file="$TF_VAR_FILE"
 
-  docs:
-    name: Update docs
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [check, validate, tflint, security]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Install terraform-docs
-        run: |
-          curl -sSL -o /tmp/tf-docs.tar.gz \
-            "https://github.com/terraform-docs/terraform-docs/releases/download/v0.20.0/terraform-docs-v0.20.0-linux-amd64.tar.gz"
-          tar -xzf /tmp/tf-docs.tar.gz -C /usr/local/bin terraform-docs
-
-      - name: Regenerate README
-        run: make document
-
-      - name: Commit if changed
-        run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git add README.md
-          git diff --staged --quiet || git commit -m "docs: regenerate README" && git push
-
   deploy:
     name: Deploy
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [docs]
+    needs: [check, validate, tflint, security]
     runs-on: ubuntu-latest
     environment: production
     steps:
