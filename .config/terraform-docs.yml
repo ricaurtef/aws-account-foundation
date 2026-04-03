@@ -36,23 +36,25 @@ content: |-
 
   ## Architecture
 
-  ```
-  ┌─────────────────────────────────────────────────────────┐
-  │ AWS Organization (management account)                   │
-  │                                                         │
-  │  ┌────────────────┐  ┌─────────────────────────────┐   │
-  │  │ IAM Identity   │  │ OIDC Federation              │   │
-  │  │ Center (SSO)   │  │                               │   │
-  │  │                │  │ Provider: GitHub Actions       │   │
-  │  │ (imported)     │  │ Trust: ricaurtef/*:main        │   │
-  │  └────────────────┘  │ Role: site deploy permissions  │   │
-  │                      └─────────────────────────────┘   │
-  │                                                         │
-  │  ┌─────────────────────────────────────────────────┐   │
-  │  │ S3: ricaurtef-terraform-state                    │   │
-  │  │ (versioned, KMS encrypted, public access blocked)│   │
-  │  └─────────────────────────────────────────────────┘   │
-  └─────────────────────────────────────────────────────────┘
+  ```mermaid
+  block-beta
+    columns 2
+
+    block:org:2["AWS Organization (management account)"]
+      columns 2
+
+      block:sso["IAM Identity Center (SSO)"]
+      end
+
+      block:oidc["OIDC Federation"]
+        p["Provider: GitHub Actions"]
+        t["Trust: ricaurtef/*:main"]
+        r["Role: no policies (generic)"]
+      end
+
+      block:s3:2["S3: ricaurtef-terraform-state\n(versioned, KMS encrypted, public access blocked)"]
+      end
+    end
   ```
 
   ## Repository structure
@@ -65,7 +67,7 @@ content: |-
   ├── setup/
   │   └── bootstrap/         # State bucket (manual, one-time)
   ├── env/
-  │   └── web-prod.tfvars    # Environment-specific values
+  │   └── production.tfvars    # Environment-specific values
   ├── .config/               # Integration tooling configs
   ├── .github/workflows/     # CI/CD pipeline
   ├── main.tf                # Module orchestration
@@ -123,7 +125,7 @@ content: |-
     -backend-config="encrypt=true" \
     -backend-config="use_lockfile=true"
 
-  terraform apply -var-file=env/web-prod.tfvars
+  terraform apply -var-file=env/production.tfvars
   ```
 
   **Step 3 — Enable the pipeline:**
@@ -138,33 +140,26 @@ content: |-
 
   ## CI/CD pipeline
 
-  ```
-  PR opened/updated                              Merge to main
-         │                                               │
-         ▼                                               ▼
-  ┌────────────────────────────────┐    ┌────────────────────────────────┐
-  │ check │ validate │ tflint │   │    │ check │ validate │ tflint │   │
-  │ security (parallel)           │    │ security (parallel)           │
-  └──────────────┬────────────────┘    └──────────────┬────────────────┘
-                 │                                    │
-                 ▼                                    ▼
-          ┌────────────┐                    ┌───────────────────┐
-          │    plan     │                   │ deploy (production)│
-          │ (review)    │                   │ plan → ⏸️ approve   │
-          └────────────┘                    │ → apply            │
-                                            └─────────┬─────────┘
-                                                      │
-                                                      ▼
-                                              ┌──────────────┐
-                                              │   release     │
-                                              │ (auto-tag)    │
-                                              └──────────────┘
+  ```mermaid
+  flowchart TD
+    subgraph pr["PR opened/updated"]
+      direction TB
+      gates1["check | validate | tflint | security"]
+      gates1 --> plan["plan (review)"]
+    end
+
+    subgraph merge["Merge to main"]
+      direction TB
+      gates2["check | validate | tflint | security"]
+      gates2 --> deploy["deploy (production)\nplan → ⏸️ approve → apply"]
+      deploy --> release["release (auto-tag)"]
+    end
   ```
 
   - **PR:** quality gates + plan for review.
   - **Merge:** quality gates + deploy with `production` environment approval gate + automatic release.
   - Backend config injected at `terraform init` via `-backend-config` flags.
-  - Environment values from `env/web-prod.tfvars` via `-var-file`.
+  - Environment values from `env/production.tfvars` via `-var-file`.
 
   ## Required tools
 
