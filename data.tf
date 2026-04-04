@@ -1,4 +1,10 @@
 ############################
+# Identity Center
+############################
+
+data "aws_ssoadmin_instances" "this" {}
+
+############################
 # Foundation Pipeline Policy
 ############################
 
@@ -152,7 +158,7 @@ data "aws_iam_policy_document" "production_deploy_trust" {
 
     principals {
       type        = "AWS"
-      identifiers = [module.identity.role_arn]
+      identifiers = [module.oidc.role_arn]
     }
   }
 }

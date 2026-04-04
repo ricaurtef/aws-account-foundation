@@ -37,36 +37,23 @@ flowchart TB
 
 ```
 aws-account-foundation/
-├── modules/
-│   ├── identity/          # OIDC federation + IAM deploy role
-│   └── organization/      # AWS Organizations + policy types
 ├── setup/
-│   └── bootstrap/         # State bucket (manual, one-time)
+│   └── bootstrap/           # State bucket (manual, one-time)
 ├── env/
 │   └── production.tfvars    # Environment-specific values
-├── .config/               # Integration tooling configs
-├── .github/workflows/     # CI/CD pipeline
-├── main.tf                # Module orchestration
-├── variables.tf           # Root variables (no defaults — driven by tfvars)
-├── outputs.tf             # Root outputs
-├── providers.tf           # AWS provider
-├── backend.tf             # S3 backend (partial — populated at init time)
-└── versions.tf            # Terraform + provider version constraints
+├── .config/                 # Integration tooling configs
+├── .github/workflows/       # CI/CD pipeline
+├── organization.tf          # AWS Organizations + member accounts
+├── sso.tf                   # Identity Center, permission sets, users, assignments
+├── oidc.tf                  # OIDC federation (external module)
+├── iam.tf                   # IAM roles + role policies (hub + spoke)
+├── data.tf                  # IAM policy documents + SSO data sources
+├── variables.tf             # Root variables (no defaults — driven by tfvars)
+├── outputs.tf               # Root outputs
+├── providers.tf             # AWS providers (default + production alias)
+├── backend.tf               # S3 backend (partial — populated at init time)
+└── versions.tf              # Terraform + provider version constraints
 ```
-
-## Modules
-
-### identity
-
-Deploys OIDC federation for GitHub Actions using
-[`terraform-aws-oidc-federation`](https://github.com/ricaurtef/terraform-aws-oidc-federation).
-Creates a single OIDC role in the management account (hub) that any repo under `ricaurtef/*`
-can assume from `main` or pull requests.
-
-### organization
-
-Manages the AWS Organization resource with SCP policy types enabled, member accounts,
-Identity Center users, permission sets, and account assignments.
 
 ## Hub-and-spoke IAM
 
@@ -190,8 +177,7 @@ The version is derived from the latest `v*.*.*` tag. The first release starts at
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_identity"></a> [identity](#module\_identity) | ./modules/identity | n/a |
-| <a name="module_organization"></a> [organization](#module\_organization) | ./modules/organization | n/a |
+| <a name="module_oidc"></a> [oidc](#module\_oidc) | git::https://github.com/ricaurtef/terraform-aws-oidc-federation.git | 3d6b8115475699d23d8601c8fc3bebd73f0b4b9c |
 ## Inputs
 
 | Name | Description | Type | Default | Required |
