@@ -1,24 +1,17 @@
-module "organization" {
-  source = "./modules/organization"
-
-  production_account_email = var.production_account_email
-  admin_email              = var.admin_email
-}
-
-module "identity" {
-  source = "./modules/identity"
-
-  github_owner = var.github_owner
-}
+############################
+# Foundation Pipeline Policy
+############################
 
 resource "aws_iam_role_policy" "foundation_pipeline" {
   name   = "foundation-pipeline"
-  role   = module.identity.role_name
+  role   = module.oidc.role_name
   policy = data.aws_iam_policy_document.foundation_pipeline.json
 }
 
-# Shared deployment role in production — all workload projects chain into this.
-# Expand the policy when new projects need new AWS services.
+############################
+# Production Deployment Role
+############################
+
 resource "aws_iam_role" "production_deploy" {
   provider = aws.production
 
