@@ -297,8 +297,11 @@ data "aws_iam_policy_document" "production_deploy" {
   statement {
     sid = "CloudWatchWrite"
     actions = [
+      "cloudwatch:DeleteAlarms",
       "cloudwatch:PutDashboard",
       "cloudwatch:DeleteDashboards",
+      "cloudwatch:PutMetricAlarm",
+      "cloudwatch:SetAlarmState",
       "cloudwatch:TagResource",
       "cloudwatch:UntagResource",
     ]
@@ -384,6 +387,59 @@ data "aws_iam_policy_document" "production_deploy" {
       "iam:ListAttachedRolePolicies",
       "iam:ListInstanceProfilesForRole",
       "iam:PassRole",
+    ]
+
+    resources = ["*"]
+  }
+
+  # Lambda: functions
+  statement {
+    sid = "LambdaRead"
+    actions = [
+      "lambda:Get*",
+      "lambda:List*",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "LambdaWrite"
+    actions = [
+      "lambda:AddPermission",
+      "lambda:CreateFunction",
+      "lambda:DeleteFunction",
+      "lambda:PublishVersion",
+      "lambda:RemovePermission",
+      "lambda:TagResource",
+      "lambda:UntagResource",
+      "lambda:UpdateFunctionCode",
+      "lambda:UpdateFunctionConfiguration",
+    ]
+
+    resources = ["*"]
+  }
+
+  # CloudWatch Logs: log groups
+  statement {
+    sid = "LogsRead"
+    actions = [
+      "logs:Describe*",
+      "logs:Get*",
+      "logs:List*",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "LogsWrite"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:DeleteLogGroup",
+      "logs:PutRetentionPolicy",
+      "logs:TagResource",
+      "logs:UntagResource",
     ]
 
     resources = ["*"]
