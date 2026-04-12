@@ -163,24 +163,24 @@ The version is derived from the latest `v*.*.*` tag. The first release starts at
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.14 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.27 |
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | 6.39.0 |
 | <a name="provider_aws.production"></a> [aws.production](#provider\_aws.production) | 6.39.0 |
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_oidc"></a> [oidc](#module\_oidc) | git::https://github.com/ricaurtef/terraform-aws-oidc-federation.git | 3d6b8115475699d23d8601c8fc3bebd73f0b4b9c |
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_admin_email"></a> [admin\_email](#input\_admin\_email) | Email address for the admin Identity Center user. | `string` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment (e.g., production, staging). | `string` | n/a | yes |
 | <a name="input_github_owner"></a> [github\_owner](#input\_github\_owner) | GitHub account owner for OIDC federation. | `string` | n/a | yes |
@@ -190,7 +190,7 @@ The version is derived from the latest `v*.*.*` tag. The first release starts at
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_organization_id"></a> [organization\_id](#output\_organization\_id) | ID of the AWS Organization. |
 | <a name="output_production_account_id"></a> [production\_account\_id](#output\_production\_account\_id) | Account ID of the production workload account. |
 | <a name="output_production_deploy_role_arn"></a> [production\_deploy\_role\_arn](#output\_production\_deploy\_role\_arn) | ARN of the shared deployment role in the production account. |

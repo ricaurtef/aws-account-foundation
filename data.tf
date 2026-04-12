@@ -306,6 +306,89 @@ data "aws_iam_policy_document" "production_deploy" {
     resources = ["*"]
   }
 
+  # SNS: alerting topics + subscriptions
+  statement {
+    sid = "SNSRead"
+    actions = [
+      "sns:Get*",
+      "sns:List*",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "SNSWrite"
+    actions = [
+      "sns:CreateTopic",
+      "sns:DeleteTopic",
+      "sns:Subscribe",
+      "sns:Unsubscribe",
+      "sns:SetTopicAttributes",
+      "sns:TagResource",
+      "sns:UntagResource",
+    ]
+
+    resources = ["*"]
+  }
+
+  # SSM: parameter store (alerting config)
+  statement {
+    sid = "SSMRead"
+    actions = [
+      "ssm:Get*",
+      "ssm:List*",
+      "ssm:Describe*",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "SSMWrite"
+    actions = [
+      "ssm:PutParameter",
+      "ssm:DeleteParameter",
+      "ssm:AddTagsToResource",
+      "ssm:RemoveTagsFromResource",
+    ]
+
+    resources = ["*"]
+  }
+
+  # IAM: roles + policies for Lambda functions
+  statement {
+    sid = "IAMRead"
+    actions = [
+      "iam:Get*",
+      "iam:List*",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "IAMWrite"
+    actions = [
+      "iam:CreateRole",
+      "iam:DeleteRole",
+      "iam:UpdateRole",
+      "iam:UpdateAssumeRolePolicy",
+      "iam:TagRole",
+      "iam:UntagRole",
+      "iam:PutRolePolicy",
+      "iam:DeleteRolePolicy",
+      "iam:AttachRolePolicy",
+      "iam:DetachRolePolicy",
+      "iam:ListRolePolicies",
+      "iam:ListAttachedRolePolicies",
+      "iam:ListInstanceProfilesForRole",
+      "iam:PassRole",
+    ]
+
+    resources = ["*"]
+  }
+
   # STS: identity verification
   statement {
     sid       = "STS"
